@@ -1,0 +1,88 @@
+from copy import deepcopy
+from collections import deque
+from pprint import pprint
+
+R, C, T = list(map(int, input().split()))
+dust = [list(map(int, input().split())) for _ in range(R)]
+
+up_move = [[0,1],[-1,0],[0,-1],[1,0]]
+down_move = [[0,1],[1,0],[0,-1],[-1,0]]
+
+cleaner = []
+for i in range(R):
+    for j in range(C):
+        if dust[i][j] == -1:
+            cleaner.append([i,j])
+up_cleaner = cleaner[0]
+down_cleaner = cleaner[1]
+
+time = 0
+
+while time < T:
+    next_dust = [[0] * C for _ in range(R)]
+    time += 1
+    for x in range(R):
+        for y in range(C):
+            if dust[x][y] > 0:
+                m_cnt = 0
+                for m in up_move:
+                    next_x = x + m[0]
+                    next_y = y + m[1]
+                    if 0 <= next_x < R and 0 <= next_y < C:
+                        if dust[next_x][next_y] >= 0:
+                            m_cnt += 1
+                            next_dust[next_x][next_y] += dust[x][y] // 5
+
+                next_dust[x][y] += dust[x][y] - m_cnt * (dust[x][y] // 5)
+
+    dust = deepcopy(next_dust)
+    for idx in range(2):
+        dust[cleaner[idx][0]][cleaner[idx][1]] = -1
+    up_m_cnt = 0
+    temp_up_x = up_cleaner[0]
+    temp_up_y = up_cleaner[1]
+    temp_up_list = [0]
+
+    while True:
+        temp_up_x += up_move[up_m_cnt][0]
+        temp_up_y += up_move[up_m_cnt][1]
+        if temp_up_x == up_cleaner[0] and temp_up_y == up_cleaner[1]:
+            break
+
+        if 0 <= temp_up_x < R and 0 <= temp_up_y < C:
+            t = temp_up_list.pop()
+            temp_up_list.append(dust[temp_up_x][temp_up_y])
+            dust[temp_up_x][temp_up_y] = t
+        else:
+            temp_up_x -= up_move[up_m_cnt][0]
+            temp_up_y -= up_move[up_m_cnt][1]
+            up_m_cnt += 1
+
+    down_m_cnt = 0
+    temp_down_x = down_cleaner[0]
+    temp_down_y = down_cleaner[1]
+    temp_down_list = [0]
+
+    while True:
+        temp_down_x += down_move[down_m_cnt][0]
+        temp_down_y += down_move[down_m_cnt][1]
+        if temp_down_x == down_cleaner[0] and temp_down_y == down_cleaner[1]:
+            break
+
+        if 0 <= temp_down_x < R and 0 <= temp_down_y < C:
+            t = temp_down_list.pop()
+            temp_down_list.append(dust[temp_down_x][temp_down_y])
+            dust[temp_down_x][temp_down_y] = t
+        else:
+            temp_down_x -= down_move[down_m_cnt][0]
+            temp_down_y -= down_move[down_m_cnt][1]
+            down_m_cnt += 1
+
+tot_dust = 0
+
+for r in range(R):
+    for c in range(C):
+        if dust[r][c] > 0:
+            tot_dust += dust[r][c]
+
+print(tot_dust)
